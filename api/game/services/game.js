@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { JSDOM } = require('jsdom');
+const slugify = require('slugify');
 
 
 
@@ -30,14 +31,16 @@ module.exports = {
 
   populate: async (params) => {
 
-    const gogApiUrl =
-      `https://www.gog.com/games/ajax/filtered?mediaType=game&page=1&sort=popularity`;
+    const gogApiUrl = `https://www.gog.com/games/ajax/filtered?mediaType=game&page=1&sort=popularity`;
 
-      const { data: { products} } = await axios.get(gogApiUrl);
+    const { data: { products} } = await axios.get(gogApiUrl);
 
-      // console.log(products[1]);
+    await strapi.services.publisher.create({
+      name: products[0].publisher,
+      slug:slugify(products[0].publisher)
+    })
 
-    console.log(await getGameInfo(products[1].slug));
+    // console.log(await getGameInfo(products[1].slug));
   },
 
 };
