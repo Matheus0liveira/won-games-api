@@ -26,7 +26,7 @@ async function getGameInfo(slug) {
         .getAttribute("xlink:href")
         .replace(/_/g, "")
         .replace(/[^\w-]+/g, "")
-      : "Free",
+      : "BR0",
     short_description: description.textContent.trim().slice(0, 160),
     description: description.innerHTML,
   };
@@ -97,7 +97,7 @@ async function createGames(products) {
           ),
           platforms: await Promise.all(
             product.supportedOperatingSystems.map((name) =>
-              getByName(name, "platform")
+              getByName(name, "plataform")
             )
           ),
           developers: [await getByName(product.developer, "developer")],
@@ -122,8 +122,14 @@ module.exports = {
 
     // console.log(products[0]);
 
-    await createManyToManyData([products[2], products[3]]);
-    await createGames([products[2], products[3]]);
+    try{
+      await createManyToManyData([products[2], products[3]]);
+      await createGames([products[2], products[3]]);
+
+    }catch(e){
+      console.log('ERROR -', e);
+
+    }
 
     // await create(products[1].publisher, "publisher");
     // await create(products[1].developer, "developer");
