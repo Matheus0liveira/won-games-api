@@ -8,7 +8,12 @@
 const axios = require("axios");
 const slugify = require("slugify");
 
+function Exception(e) {
+  return { e, data: e.data && e.data.errors && e.data.errors };
+}
+
 async function getGameInfo(slug) {
+  try {
   const jsdom = require("jsdom");
   const { JSDOM } = jsdom;
   const body = await axios.get(`https://www.gog.com/game/${slug}`);
@@ -30,7 +35,10 @@ async function getGameInfo(slug) {
     short_description: description.textContent.trim().slice(0, 160),
     description: description.innerHTML,
   };
-}
+  } catch (e) {
+    console.log("getGameInfo", Exception(e));
+  };
+};
 
 async function getByName(name, entityName) {
   const item = await strapi.services[entityName].find({ name });
@@ -83,8 +91,8 @@ function timeout(ms) {
 }
 
 
-
 async function setImage({ image, game, field = "cover" }) {
+  try {
   const url = `https:${image}_bg_crop_1680x655.jpg`;
   const { data } = await axios.get(url, { responseType: "arraybuffer" });
   const buffer = Buffer.from(data, "base64");
@@ -107,6 +115,9 @@ async function setImage({ image, game, field = "cover" }) {
       "Content-Type": `multipart/form-data; boundary=${formData._boundary}`,
     },
   });
+  } catch (error) {
+    console.log("setImage", Exception(e));
+  }
 }
 
 
@@ -139,6 +150,12 @@ async function createGames(products) {
         });
 
         await setImage({ image: product.image, game });
+        await Promise.All(
+          product.gallery
+          .slice()
+          .map(url => setImage({image: url, game, field: 'gallery'}))
+        );
+        await timeout(2000);
 
         return game;
       }
@@ -153,6 +170,7 @@ async function createGames(products) {
 
 module.exports = {
   populate: async (params) => {
+    try {
     const gogApiUrl = `https://www.gog.com/games/ajax/filtered?mediaType=game&page=1&sort=popularity`;
 
     const {
@@ -161,13 +179,12 @@ module.exports = {
 
     // console.log(products[0]);
 
-    try{
+
       await createManyToManyData([products[2], products[3]]);
       await createGames([products[2], products[3]]);
 
-    }catch(e){
-      console.log('ERROR -', e);
-
+    } catch (e) {
+      console.log("populate", Exception(e));
     }
 
     // await create(products[1].publisher, "publisher");
