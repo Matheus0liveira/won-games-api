@@ -183,8 +183,8 @@ module.exports = {
     // console.log(products[0]);
 
 
-      await createManyToManyData([products[2], products[3]]);
-      await createGames([products[2], products[3]]);
+      await createManyToManyData(products);
+      await createGames(products);
 
     } catch (e) {
       console.log("populate", Exception(e));
